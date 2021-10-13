@@ -3,6 +3,8 @@ from PIL import Image
 
 import src.utils as utils
 import src.vertex as vertex
+import src.colors as colors
+import src.scene as scene
 
 
 def get_image_info(line: str) -> utils.ImageInfo:
@@ -37,30 +39,17 @@ def get_vertex_by_index(verts, index: str) -> vertex.Vertex:
         return verts[index]
     return verts[index - 1]
 
-def parse_line(line: "list[str]", image: Image, draw_data: utils.DrawData) -> None:
+def parse_line(line: "list[str]", draw_data: scene.SceneMata) -> None:
     """
     parse keywords:
-    \b xyz x y z:
     \b color r g b:
     """
     keyword: str = line[0]
     ### DRAW DATA UPDATES ###
-    if keyword == "xyz":
-        new_vertex: vertex.Vertex = vertex.Vertex(
-            x=float(line[1]),
-            y=float(line[2]),
-            z=float(line[3]),
-            r=draw_data.color.r,
-            g=draw_data.color.g,
-            b=draw_data.color.b,
-            a=draw_data.color.a,
-        )
-        draw_data.vertex_list.append(new_vertex)
-
-    elif keyword == "color":
+    if keyword == "color":
         r = float(line[1])
         g = float(line[2])
         b = float(line[3])
-        draw_data.color = utils.RGBLinear(r, g, b)
+        draw_data.color = colors.RGBLinear(r, g, b)
     
    

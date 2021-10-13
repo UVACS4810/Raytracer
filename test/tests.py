@@ -3,7 +3,8 @@ import unittest
 import numpy as np
 import src.utils as utils
 import src.vertex as vertex
-
+import src.colors as colors
+import src.scene as scene
 
 class TestVertex(unittest.TestCase):
     def test_convert_vertex_to_list(self):
@@ -22,22 +23,6 @@ class TestVertex(unittest.TestCase):
         self.assertEqual(ll.all(), v.as_ndarray().all())
 
 class TestUtils(unittest.TestCase):
-    def test_convert_hex_to_rgb(self):
-        hex_color = "#aaaaff"
-        rgb: utils.RGB = utils.RGB(170, 170, 255)
-        self.assertEqual(utils.convert_hex_to_rgb(hex_color), rgb)
-
-        hex_color = "#aaaaff01"
-        rgb: utils.RGB = utils.RGB(170, 170, 255, 1)
-        self.assertEqual(utils.convert_hex_to_rgb(hex_color), rgb)
-
-    def test_add_RGB(self):
-        c1 = utils.RGB(1, 1, 1)
-        c2 = utils.RGB(1, 1, 1)
-        expected = utils.RGB(2, 2, 2)
-        self.assertEqual(c1 + c2, expected)
-        # check overflow behavior
-
     def test_make_filename_list(self):
         # case with one image
         expected = ["whatnot.png"]
@@ -74,32 +59,49 @@ class TestUtils(unittest.TestCase):
         for line in lines:
             out = utils.line_to_list(line)
             self.assertEqual(out, expected)
+    
+class TestColors(unittest.TestCase):
+    def test_convert_hex_to_rgb(self):
+        hex_color = "#aaaaff"
+        rgb: colors.RGB = colors.RGB(170, 170, 255)
+        self.assertEqual(colors.convert_hex_to_rgb(hex_color), rgb)
+
+        hex_color = "#aaaaff01"
+        rgb: colors.RGB = colors.RGB(170, 170, 255, 1)
+        self.assertEqual(colors.convert_hex_to_rgb(hex_color), rgb)
+
+    def test_add_RGB(self):
+        c1 = colors.RGB(1, 1, 1)
+        c2 = colors.RGB(1, 1, 1)
+        expected = colors.RGB(2, 2, 2)
+        self.assertEqual(c1 + c2, expected)
+        # check overflow behavior
     def test_add_add_pixl_colors(self):
         # The top pixel should take precidence when it has a full opacity
-        c1 = utils.RGB(255, 255, 0, 255)
-        c2 = utils.RGB(255, 0, 0, 255)
-        c_result = utils.add_pixel_colors(c1, c2)
+        c1 = colors.RGB(255, 255, 0, 255)
+        c2 = colors.RGB(255, 0, 0, 255)
+        c_result = colors.add_pixel_colors(c1, c2)
         self.assertEqual(c_result, c1)
 
         # The bottom pixel will take precidence when the top pixel has no opacity
-        c1 = utils.RGB(255, 255, 0, 0)
-        c2 = utils.RGB(255, 0, 0, 255)
-        c_result = utils.add_pixel_colors(c1, c2)
+        c1 = colors.RGB(255, 255, 0, 0)
+        c2 = colors.RGB(255, 0, 0, 255)
+        c_result = colors.add_pixel_colors(c1, c2)
         self.assertEqual(c_result, c2)
 
         # When they are mixed it is a little harder to determine
-        c1 = utils.RGB(100, 100, 100, 100)
-        c2 = utils.RGB(100, 100, 100, 100)
-        expected = utils.RGB(100, 100,100, 161)
-        c_result = utils.add_pixel_colors(c1, c2)
+        c1 = colors.RGB(100, 100, 100, 100)
+        c2 = colors.RGB(100, 100, 100, 100)
+        expected = colors.RGB(100, 100,100, 161)
+        c_result = colors.add_pixel_colors(c1, c2)
         self.assertEqual(c_result, expected)
 
     def test_linear_RGB_to_sRGB(self):
-        linear_rgb = utils.RGBLinear(2/255.0, 20/255.0, 200/255.0)
+        linear_rgb = colors.RGBLinear(2/255.0, 20/255.0, 200/255.0)
         val1 = 0.08494473023 * 255
         val2 = 0.31027774743 * 255
         val3 = 0.89843234818 * 255
-        expected_rgb = utils.RGB(val1, val2, val3)
+        expected_rgb = colors.RGB(val1, val2, val3)
         created_rgb = linear_rgb.as_rgb()
         self.assertAlmostEqual(expected_rgb.r, created_rgb.r)
         self.assertAlmostEqual(expected_rgb.g, created_rgb.g)
@@ -107,11 +109,11 @@ class TestUtils(unittest.TestCase):
 
 
         
-
+class TestScene(unittest.TestCase):
     def test_draw_data_clear(self):
-        draw_data_orig = utils.DrawData([], 1, 1)
-        draw_data_updated = utils.DrawData([], 1, 1)
-        draw_data_updated.color = utils.RGBLinear(1.1, 1.0, 1.0)
+        draw_data_orig = scene.SceneMata(1, 1)
+        draw_data_updated = scene.SceneMata(1, 1)
+        draw_data_updated.color = colors.RGBLinear(1.1, 1.0, 1.0)
         self.assertNotEqual(draw_data_orig.color, draw_data_updated.color)
         draw_data_updated.clear()
         self.assertEqual(draw_data_orig.color, draw_data_updated.color)
