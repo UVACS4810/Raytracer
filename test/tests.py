@@ -5,7 +5,7 @@ import src.utils as utils
 import src.vertex as vertex
 import src.colors as colors
 import src.scene as scene
-
+import src.shapes as shapes
 class TestVertex(unittest.TestCase):
     def test_convert_vertex_to_list(self):
         r = 255
@@ -117,3 +117,23 @@ class TestScene(unittest.TestCase):
         self.assertNotEqual(draw_data_orig.color, draw_data_updated.color)
         draw_data_updated.clear()
         self.assertEqual(draw_data_orig.color, draw_data_updated.color)
+
+
+class TestShapes(unittest.TestCase):
+    def test_circle_intersection(self):
+        ray_origin = np.array([0,0,0])
+        ray_direct_1 = np.array([0,0,-1])
+        ray_direct_2 = np.array([.98, .5, -1])
+        sphere_1 = shapes.Sphere(0, 0, -1, 0.3, colors.RGBLinear())
+        sphere_2 = shapes.Sphere(1, 0.8, -1, 0.5, colors.RGBLinear())
+        ray_1 = shapes.Ray(ray_origin, ray_direct_1)
+        ray_2 = shapes.Ray(ray_origin, ray_direct_2)
+        t1 = sphere_1.intersection(ray_1)
+        t2 = sphere_1.intersection(ray_2)
+        t3 = sphere_2.intersection(ray_2)
+        self.assertIsNotNone(t1)
+        self.assertEqual(t1, .7)
+        self.assertIsNone(t2)
+        self.assertIsNotNone(t3)
+
+

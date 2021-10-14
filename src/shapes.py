@@ -12,6 +12,9 @@ class Ray():
     origin: np.ndarray
     direction: np.ndarray
 
+    def __post_init__(self):
+        normal_of_direction = np.linalg.norm(self.direction)
+        self.direction = self.direction / normal_of_direction
 
 class Shape(abc.ABC):
 

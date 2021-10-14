@@ -1,5 +1,9 @@
 import dataclasses
 
+
+def bound(v: float, high: float, low: float) -> float:
+    return max(low, min(high, v))
+
 @dataclasses.dataclass
 class RGB():
     """RGB is really sRGB. It is a gamma corrected version of RGB with values in range 0-255
@@ -28,9 +32,6 @@ def gamma_correction(v: float) -> float:
         return 12.92 * v
     return 1.055 * v ** (1/2.4) - 0.055
 
-def bound(v: float, high: float, low: float) -> float:
-    return max(low, min(high, v))
-
 @dataclasses.dataclass
 class RGBLinear():
     """Linear RGB allows for linear color interpolation. It do not work with gamma correction. Thus, before we display
@@ -39,11 +40,25 @@ class RGBLinear():
     Returns:
         [type]: [description]
     """
-    r: float
-    g: float
-    b: float
+    r: float = 0.0
+    g: float = 0.0
+    b: float = 0.0
     a: float = 1.0
 
+    def __add__(self, other):
+        return RGBLinear(
+            bound((self.r + other.r), 255, 0),
+            bound((self.g + other.g), 255, 0),
+            bound((self.b + other.b), 255, 0),
+            bound((self.a + other.a), 255, 0),
+        )
+    def __mul__(self, other):
+        return RGBLinear(
+            bound((self.r * other.r), 255, 0),
+            bound((self.g * other.g), 255, 0),
+            bound((self.b * other.b), 255, 0),
+            bound((self.a * other.a), 255, 0),
+        )
     def as_rgb(self, rounded = False) -> RGB:
         r = bound(gamma_correction(self.r) * 255, 255, 0)
         g = bound(gamma_correction(self.g) * 255, 255, 0)
