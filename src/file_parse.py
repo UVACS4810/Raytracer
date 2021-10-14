@@ -1,11 +1,9 @@
 
-from PIL import Image
-
 import src.utils as utils
 import src.vertex as vertex
 import src.colors as colors
 import src.scene as scene
-
+import src.shapes as shapes
 
 def get_image_info(line: str) -> utils.ImageInfo:
     """parses the first line of the file to get the metadata
@@ -39,7 +37,7 @@ def get_vertex_by_index(verts, index: str) -> vertex.Vertex:
         return verts[index]
     return verts[index - 1]
 
-def parse_line(line: "list[str]", draw_data: scene.SceneMata) -> None:
+def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta: scene.SceneMata) -> None:
     """
     parse keywords:
     \b color r g b:
@@ -50,6 +48,13 @@ def parse_line(line: "list[str]", draw_data: scene.SceneMata) -> None:
         r = float(line[1])
         g = float(line[2])
         b = float(line[3])
-        draw_data.color = colors.RGBLinear(r, g, b)
+        scene_meta.color = colors.RGBLinear(r, g, b)
     
+    elif keyword == "sphere":
+        x = float(line[1])
+        y = float(line[2])
+        z = float(line[3])
+        r = float(line[4])
+        new_sphere = shapes.Sphere(x, y, z, r, scene_meta.color)
+        scene_objects.shapes.append(new_sphere)
    

@@ -2,6 +2,7 @@ import dataclasses
 from src.shapes import Shape
 import numpy as np
 import src.colors as colors
+import src.light as light
 
 @dataclasses.dataclass
 class SceneMata():
@@ -27,4 +28,5 @@ class SceneMata():
 class SceneObjects():
     """Will store information about things that need to be rendered in the scene
     """
-    shapes: "list[Shape]" = list
+    shapes: "list[Shape]" = dataclasses.field(default_factory=list)
+    lights: "list[light.Light]" = dataclasses.field(default_factory=list)
