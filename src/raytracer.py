@@ -1,12 +1,15 @@
 
-import dataclasses
+import math
 from typing import Tuple
+
 import numpy as np
 from PIL import Image
-import math
+
+import src.colors as colors
 import src.scene as scene
 import src.shapes as shapes
-import src.colors as colors
+
+
 def make_eye_ray(x: float, y: float, meta: scene.SceneMata) -> shapes.Ray:
     """Makes a ray starting at the eye
 
@@ -43,22 +46,36 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
         for y in range(meta.height):
             # Make the ray
 
-            ray = make_eye_ray(x, y, meta)
+            ray_from_eye = make_eye_ray(x, y, meta)
             closest_shape = None
             current_closest = math.inf
             for shape in objects.shapes:
-                distance_to_shape = shape.intersection(ray)
+                distance_to_shape = shape.intersection(ray_from_eye)
                 if distance_to_shape:
                     if distance_to_shape < current_closest:
                         current_closest = distance_to_shape
                         closest_shape = shape
             
             if closest_shape:
+                # calculate the point of intersection
+                point_of_intersection = meta.eye + (current_closest*ray_from_eye.direction)
+                # find the normal of the shape at the point of intersection
                 pixel_color = colors.RGBLinear(0.0, 0.0, 0.0)
+                normal = closest_shape.normal_at_point(point_of_intersection)
                 for light in objects.lights:
-                    # find the normal of the 
-                    
+                    # make a ray to the light source 
+                    ray_to_light_direction = light.point - point_of_intersection
+                    ray_to_light = shapes.Ray(point_of_intersection, ray_to_light_direction)
+                    color_from_light = light.lambert(
+                        ray=ray_to_light,
+                        normal=normal,
+                        object_color=closest_shape.color,
+                    )
+                    # add the color from the light to the current pixel color
+                    if color_from_light:
+                        pixel_color += color_from_light
+
                 # convert to color to sRGB
-                converted_color = pixel_color.as_rgb()
+                converted_color = pixel_color.as_rgb(rounded=True)
                 image.im.putpixel((x, y), (converted_color.r, converted_color.g, converted_color.b, converted_color.a))
 

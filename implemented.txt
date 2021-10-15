@@ -1,0 +1,6 @@
+hw3sphere.txt
+hw3sun.txt
+hw3color.txt
+hw3overlap.txt
+hw3behind.txt
+hw3suns.txt

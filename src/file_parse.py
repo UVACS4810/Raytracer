@@ -1,4 +1,7 @@
 
+import numpy as np
+import src.light as light
+
 import src.utils as utils
 import src.vertex as vertex
 import src.colors as colors
@@ -55,6 +58,26 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
         y = float(line[2])
         z = float(line[3])
         r = float(line[4])
-        new_sphere = shapes.Sphere(x, y, z, r, scene_meta.color)
+        center = np.array([x, y, z])
+        new_sphere = shapes.Sphere(
+            color=scene_meta.color,
+            center=center,
+            radius=r
+        )
         scene_objects.shapes.append(new_sphere)
+    
+    elif keyword == "sun":
+        x = float(line[1])
+        y = float(line[2])
+        z = float(line[3])
+        center = np.array([x, y, z])
+        new_sun = light.Sun(point=center, color=scene_meta.color)
+        scene_objects.lights.append(new_sun)
    
+    elif keyword == "bulb":
+        x = float(line[1])
+        y = float(line[2])
+        z = float(line[3])
+        center = np.array([x, y, z])
+        new_bulb = light.Bulb(point=center, color=scene_meta.color)
+        scene_objects.lights.append(new_bulb)

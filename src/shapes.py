@@ -15,23 +15,23 @@ class Ray():
     def __post_init__(self):
         normal_of_direction = np.linalg.norm(self.direction)
         self.direction = self.direction / normal_of_direction
-
+@dataclasses.dataclass
 class Shape(abc.ABC):
-
-    @abc.abstractclassmethod
+    color: colors.RGBLinear
+    @abc.abstractmethod
     def intersection(self, ray: Ray) -> float:
         pass
-
+    
+    @abc.abstractmethod
+    def normal_at_point(self, point: np.ndarray) -> np.ndarray:
+        pass
 
 @dataclasses.dataclass
 class Sphere(Shape):
     """A sphere with center (x,y,z) and `radius`.
     """
-    x: float
-    y: float
-    z: float
+    center: np.ndarray
     radius: float
-    color: colors.RGBLinear
 
     def intersection(self, ray: Ray) -> float or None:
         """"""
@@ -43,20 +43,21 @@ class Sphere(Shape):
         Returns:
             float: distance to intersection point from origin
         """
-        circle_center = np.array([self.x, self.y, self.z])
-        assert np.shape(circle_center) == np.shape(ray.origin)
-        is_inside: bool = (np.linalg.norm(circle_center - ray.origin) ** 2) < self.radius ** 2
-        t_c = np.dot((circle_center - ray.origin), ray.direction)/np.linalg.norm(ray.direction)
+        assert np.shape(self.center) == np.shape(ray.origin)
+        is_inside: bool = (np.linalg.norm(self.center - ray.origin) ** 2) < self.radius ** 2
+        t_c = np.dot((self.center - ray.origin), ray.direction)/np.linalg.norm(ray.direction)
         if not is_inside and t_c < 0:
             return
-        d_sqr = np.linalg.norm(ray.origin + (t_c * ray.direction) - circle_center)**2
+        d_sqr = np.linalg.norm(ray.origin + (t_c * ray.direction) - self.center)**2
         if not is_inside and d_sqr > self.radius**2:
             return
         t_offset = math.sqrt(self.radius**2 - d_sqr)/np.linalg.norm(ray.direction)
         if is_inside:
             return t_c + t_offset
         else:
-            return t_c - t_offset        
+            return t_c - t_offset
 
-
-
+    def normal_at_point(self, point: np.ndarray) -> np.ndarray:
+        assert point.shape == (3,)
+        normal = point - self.center
+        return normal / np.linalg.norm(normal)
