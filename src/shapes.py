@@ -2,6 +2,7 @@
 import abc
 import dataclasses
 import math
+from typing import Optional
 
 import numpy as np
 
@@ -19,7 +20,7 @@ class Ray():
 class Shape(abc.ABC):
     color: colors.RGBLinear
     @abc.abstractmethod
-    def intersection(self, ray: Ray) -> float:
+    def intersection(self, ray: Ray) -> Optional[float]:
         pass
     
     @abc.abstractmethod
@@ -33,7 +34,7 @@ class Sphere(Shape):
     center: np.ndarray
     radius: float
 
-    def intersection(self, ray: Ray) -> float or None:
+    def intersection(self, ray: Ray) -> Optional[float]:
         """"""
         """Will find an intersection or fail
 

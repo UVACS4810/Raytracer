@@ -5,3 +5,5 @@ hw3overlap.txt
 hw3behind.txt
 hw3suns.txt
 hw3neglight.txt
+hw3expose.txt
+hw3fisheye.txt

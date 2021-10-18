@@ -87,3 +87,7 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
         # Set the exposure function for the scene
         v = float(line[1])
         scene_meta.exposure_function = lambda x: 1-(math.e**(-x*v))
+    
+    elif keyword == "fisheye":
+        # Set lense type to fisheye
+        scene_meta.lense = scene.Lense.fisheye
