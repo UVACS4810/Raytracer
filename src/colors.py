@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Callable
 
 
 def bound(v: float, high: float, low: float) -> float:
@@ -47,17 +48,17 @@ class RGBLinear():
 
     def __add__(self, other):
         return RGBLinear(
-            bound((self.r + other.r), 255, 0),
-            bound((self.g + other.g), 255, 0),
-            bound((self.b + other.b), 255, 0),
-            bound((self.a + other.a), 255, 0),
+            self.r + other.r,
+            self.g + other.g,
+            self.b + other.b,
+            self.a + other.a,
         )
     def __mul__(self, other):
         return RGBLinear(
-            bound((self.r * other.r), 255, 0),
-            bound((self.g * other.g), 255, 0),
-            bound((self.b * other.b), 255, 0),
-            bound((self.a * other.a), 255, 0),
+            self.r * other.r,
+            self.g * other.g,
+            self.b * other.b,
+            self.a * other.a,
         )
     def as_rgb(self, rounded = False) -> RGB:
         r = bound(gamma_correction(self.r) * 255, 255, 0)
@@ -69,6 +70,11 @@ class RGBLinear():
         else:
             return RGB(r, g, b, a)
 
+    def apply_exposure(self, exposure_funct: Callable[[float], float]):
+        self.r = exposure_funct(self.r)
+        self.g = exposure_funct(self.g)
+        self.b = exposure_funct(self.b)
+        
 def over_operator(ca: int, cb: int, aa: int, ab, a0: int) -> int:
     return round((ca * aa + cb*ab*(1-aa))/a0)
 

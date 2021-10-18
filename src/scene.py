@@ -1,4 +1,6 @@
 import dataclasses
+import math
+from typing import Callable
 from src.shapes import Shape
 import numpy as np
 import src.colors as colors
@@ -19,6 +21,7 @@ class SceneMata():
     forward: np.ndarray = np.array([0,0,-1])
     right: np.ndarray = np.array([1,0,0])
     up: np.ndarray = np.array([0,1,0])
+    exposure_function: Callable[[float], float] = lambda x: x 
     def clear(self):
         """Used to wipe info that will not cary over to the next image in the animation
         """

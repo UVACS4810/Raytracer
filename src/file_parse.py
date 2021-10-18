@@ -1,4 +1,5 @@
 
+import math
 import numpy as np
 import src.light as light
 
@@ -81,3 +82,8 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
         center = np.array([x, y, z])
         new_bulb = light.Bulb(point=center, color=scene_meta.color)
         scene_objects.lights.append(new_bulb)
+
+    elif keyword == "expose":
+        # Set the exposure function for the scene
+        v = float(line[1])
+        scene_meta.exposure_function = lambda x: 1-(math.e**(-x*v))

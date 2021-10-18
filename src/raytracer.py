@@ -74,7 +74,8 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
                     # add the color from the light to the current pixel color
                     if color_from_light:
                         pixel_color += color_from_light
-
+                # Apply the exposure function to the linear color
+                pixel_color.apply_exposure(meta.exposure_function)
                 # convert to color to sRGB
                 converted_color = pixel_color.as_rgb(rounded=True)
                 image.im.putpixel((x, y), (converted_color.r, converted_color.g, converted_color.b, converted_color.a))
