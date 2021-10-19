@@ -8,7 +8,7 @@ from PIL import Image
 import src.colors as colors
 import src.scene as scene
 import src.shapes as shapes
-
+import src.light as light
 
 def make_eye_ray(x: float, y: float, meta: scene.SceneMata) -> Optional[shapes.Ray]:
     """Makes a ray starting at the eye
@@ -80,27 +80,30 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
                 # find the normal of the shape at the point of intersection
                 pixel_color = colors.RGBLinear(0.0, 0.0, 0.0)
                 normal = closest_shape.normal_at_point(point_of_intersection)
-                for light in objects.lights:
+                for light_source in objects.lights:
                     # make a ray to the light source 
-                    ray_to_light_direction = light.point - point_of_intersection
+                    ray_to_light_direction = light_source.point - point_of_intersection
                     distance_to_light = np.linalg.norm(ray_to_light_direction)
+                    if type(light_source) is light.Sun:
+                        # TODO: draw attention to the fact that the direction for the sun in the sun's position
+                        distance_to_light = math.inf
+                        ray_to_light_direction = light_source.point
                     ray_to_light = shapes.Ray(point_of_intersection, ray_to_light_direction)
                     # check for shadows
                     has_shadow = False
                     for shape in objects.shapes:
                         shape_distance = shape.intersection(ray_to_light)
                         if shape_distance:
-                            if shape_distance < distance_to_light:
-                                has_shadow == True
+                            if shape_distance < distance_to_light and shape_distance > 10e-5:
+                                has_shadow = True
 
                     if not has_shadow:
-                        color_from_light = light.lambert(
+                        color_from_light = light_source.lambert(
                             ray=ray_to_light,
                             normal=normal,
                             object_color=closest_shape.color,
                         )
                     else:
-                        print("shadow point")
                         color_from_light = colors.RGBLinear()
                     # add the color from the light to the current pixel color
                     if color_from_light:

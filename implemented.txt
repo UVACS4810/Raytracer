@@ -7,3 +7,6 @@ hw3suns.txt
 hw3neglight.txt
 hw3expose.txt
 hw3fisheye.txt
+hw3shadow-basic.txt
+hw3shadow-bulb.txt
+hw3shadow-suns.txt
