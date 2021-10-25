@@ -1,6 +1,8 @@
 import dataclasses
 from typing import Callable
 
+import numpy as np
+
 
 def bound(v: float, high: float, low: float) -> float:
     return max(low, min(high, v))
@@ -27,7 +29,7 @@ class RGB():
         self.g = round(self.g)
         self.b = round(self.b)
         self.a = round(self.a)
-
+    
 def gamma_correction(v: float) -> float:
     if v <= 0.0031308:
         return 12.92 * v
@@ -69,12 +71,16 @@ class RGBLinear():
             return RGB(round(r), round(g), round(b), round(a))
         else:
             return RGB(r, g, b, a)
-
+    def as_ndarray(self) -> np.ndarray:
+        return np.array([self.r, self.g, self.b])
     def apply_exposure(self, exposure_funct: Callable[[float], float]):
         self.r = exposure_funct(self.r)
         self.g = exposure_funct(self.g)
         self.b = exposure_funct(self.b)
-        
+
+def color_from_ndarray(array: np.ndarray) -> RGBLinear:
+    return RGBLinear(r=array[0], g=array[1], b=array[2])
+
 def over_operator(ca: int, cb: int, aa: int, ab, a0: int) -> int:
     return round((ca * aa + cb*ab*(1-aa))/a0)
 

@@ -61,9 +61,12 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
         r = float(line[4])
         center = np.array([x, y, z])
         new_sphere = shapes.Sphere(
-            color=scene_meta.color,
             center=center,
-            radius=r
+            radius=r,
+            color=scene_meta.color,
+            shininess=scene_meta.shininess,
+            transparency=scene_meta.transparency,
+            roughness=scene_meta.roughness,
         )
         scene_objects.shapes.append(new_sphere)
     
@@ -91,3 +94,7 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
     elif keyword == "fisheye":
         # Set lense type to fisheye
         scene_meta.lense = scene.Lense.fisheye
+
+    elif keyword == "shininess":
+        shiny_level = float(line[1])
+        scene_meta.shininess = shiny_level

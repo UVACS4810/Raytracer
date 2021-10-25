@@ -31,6 +31,10 @@ class SceneMata():
     up: np.ndarray = np.array([0,1,0])
     exposure_function: Callable[[float], float] = lambda x: x
     lense: Lense = Lense.normal
+    reflection_depth: int = 4
+    shininess: float = 0.0
+    transparency: float = 0.0
+    roughness: float = 0.0
     def clear(self):
         """Used to wipe info that will not cary over to the next image in the animation
         """

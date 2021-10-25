@@ -16,9 +16,16 @@ class Ray():
     def __post_init__(self):
         normal_of_direction = np.linalg.norm(self.direction)
         self.direction = self.direction / normal_of_direction
+
 @dataclasses.dataclass
-class Shape(abc.ABC):
+class _ShapeBase:
     color: colors.RGBLinear
+    shininess: float
+    transparency: float
+    roughness: float
+
+@dataclasses.dataclass
+class Shape(abc.ABC, _ShapeBase):
     @abc.abstractmethod
     def intersection(self, ray: Ray) -> Optional[float]:
         pass
@@ -28,11 +35,14 @@ class Shape(abc.ABC):
         pass
 
 @dataclasses.dataclass
-class Sphere(Shape):
-    """A sphere with center (x,y,z) and `radius`.
-    """
+class _SphereFields:
     center: np.ndarray
     radius: float
+
+@dataclasses.dataclass
+class Sphere(Shape, _SphereFields):
+    """A sphere with center (x,y,z) and `radius`.
+    """
 
     def intersection(self, ray: Ray) -> Optional[float]:
         """"""

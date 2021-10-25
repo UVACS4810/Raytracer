@@ -124,8 +124,8 @@ class TestShapes(unittest.TestCase):
         ray_origin = np.array([0,0,0])
         ray_direct_1 = np.array([0,0,-1])
         ray_direct_2 = np.array([.98, .5, -1])
-        sphere_1 = shapes.Sphere(0, 0, -1, 0.3, colors.RGBLinear())
-        sphere_2 = shapes.Sphere(1, 0.8, -1, 0.5, colors.RGBLinear())
+        sphere_1 = shapes.Sphere(np.array([0, 0, -1]), 0.3, colors.RGBLinear())
+        sphere_2 = shapes.Sphere(np.array([1, 0.8, -1]), 0.5, colors.RGBLinear())
         ray_1 = shapes.Ray(ray_origin, ray_direct_1)
         ray_2 = shapes.Ray(ray_origin, ray_direct_2)
         t1 = sphere_1.intersection(ray_1)
@@ -135,5 +135,23 @@ class TestShapes(unittest.TestCase):
         self.assertEqual(t1, .7)
         self.assertIsNone(t2)
         self.assertIsNotNone(t3)
+    
+    def test_shape_material_data(self):
+        # Sphere with no material data
+        sphere_1 = shapes.Sphere(np.array([0, 0, 0]), 10, colors.RGBLinear())
+        self.assertEqual(sphere_1.shininess, 0.0)
+        self.assertEqual(sphere_1.roughness, 0.0)
+        self.assertEqual(sphere_1.transparency, 0.0)
+
+        # Sphere with all material data
+        shine = .5
+        rough = .6
+        trans = .7
+        sphere_2 = shapes.Sphere(np.array([0, 0, 0]), 10, colors.RGBLinear(),
+                            shininess=shine, roughness=rough, transparency=trans)
+        self.assertEqual(sphere_2.shininess, shine)
+        self.assertEqual(sphere_2.roughness, rough)
+        self.assertEqual(sphere_2.transparency, trans)
+        
 
 
