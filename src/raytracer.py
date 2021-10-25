@@ -9,7 +9,7 @@ from src import utils
 import src.colors as colors
 import src.scene as scene
 import src.shapes as shapes
-
+import src.light as light
 
 def make_eye_ray(x: float, y: float, meta: scene.SceneMata) -> Optional[shapes.Ray]:
     """Makes a ray starting at the eye
