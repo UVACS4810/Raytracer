@@ -98,3 +98,7 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
     elif keyword == "shininess":
         shiny_level = float(line[1])
         scene_meta.shininess = shiny_level
+    
+    elif keyword == "bounces":
+        bounce_num = int(line[1])
+        scene_meta.reflection_depth = bounce_num

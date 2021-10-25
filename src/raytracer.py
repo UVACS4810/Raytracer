@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 from PIL import Image
+from numpy.linalg import norm
 from src import utils
 
 import src.colors as colors
@@ -69,11 +70,11 @@ def lerp(p1: np.ndarray, p2: np.ndarray, t: float) -> np.ndarray:
     """
     return p1 + ((p2 - p1) * t)
 
-def make_reflection_ray(incident: shapes.Ray, normal: shapes.Ray, origin: np.ndarray) -> shapes.Ray:
-    direction = incident.direction - 2 * np.dot(incident.direction, normal.direction) * normal.direction
+def make_reflection_ray(incident: np.ndarray, normal: np.ndarray, origin: np.ndarray) -> shapes.Ray:
+    direction = (-2 * np.dot(incident, normal) * normal) + incident
     return shapes.Ray(origin, direction)
 
-def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMata, depth = 0) -> colors.RGBLinear:
+def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMata, depth = 0) -> Optional[colors.RGBLinear]:
     closest_shape = None
     distance_to_closest_shape = math.inf
     for shape in objects.shapes:
@@ -88,21 +89,25 @@ def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMat
         point_of_intersection = meta.eye + (distance_to_closest_shape*ray.direction)
         # find the normal of the shape at the point of intersection
         normal = closest_shape.normal_at_point(point_of_intersection)
-        for light in objects.lights:
+        for light_source in objects.lights:
             # make a ray to the light source 
-            ray_to_light_direction = light.point - point_of_intersection
+            ray_to_light_direction = light_source.point - point_of_intersection
             distance_to_light = np.linalg.norm(ray_to_light_direction)
+            if type(light_source) is light.Sun:
+                # TODO: draw attention to the fact that the direction for the sun in the sun's position
+                distance_to_light = math.inf
+                ray_to_light_direction = light_source.point
             ray_to_light = shapes.Ray(point_of_intersection, ray_to_light_direction)
             # check for shadows
             has_shadow = False
             for shape in objects.shapes:
                 shape_distance = shape.intersection(ray_to_light)
                 if shape_distance:
-                    if shape_distance < distance_to_light:
-                        has_shadow == True
+                    if shape_distance < distance_to_light and shape_distance > 10e-5:
+                        has_shadow = True
 
             if not has_shadow:
-                color_from_light = light.lambert(
+                color_from_light = light_source.lambert(
                     ray=ray_to_light,
                     normal=normal,
                     object_color=closest_shape.color,
@@ -112,13 +117,15 @@ def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMat
             # add the color from the light to the current pixel color
             if color_from_light:
                 pixel_color += color_from_light
-            # Check for reflection
-            if closest_shape.shininess != 0.0 and depth < meta.reflection_depth:
-                reflection_ray = make_reflection_ray(ray, normal, point_of_intersection)
-                color_from_reflection = trace_ray(reflection_ray, objects, meta, depth + 1)
-                # Calculate the mix of the color from the standard light and the color from reflection
-                pixel_color = lerp(pixel_color.as_ndarray(), color_from_reflection.as_ndarray(), closest_shape.shininess)
-
+        # Check for reflection
+        if closest_shape.shininess != 0.0 and depth < meta.reflection_depth:
+            reflection_ray = make_reflection_ray(ray.direction, normal, point_of_intersection)
+            color_from_reflection = trace_ray(reflection_ray, objects, meta, depth + 1)
+            # Calculate the mix of the color from the standard light and the color from reflection
+            if color_from_reflection:
+                pixel_color = colors.color_from_ndarray(
+                lerp(pixel_color.as_ndarray(), color_from_reflection.as_ndarray(), closest_shape.shininess)
+            )
     return pixel_color
     
 
@@ -126,11 +133,12 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
     for x in range(meta.width):
         for y in range(meta.height):
             # Make the ray
-
             ray_from_eye = make_eye_ray(x, y, meta)
             if not ray_from_eye:
                 continue
             pixel_color = trace_ray(ray_from_eye, objects, meta)
+            if not pixel_color:
+                pixel_color = colors.RGBLinear()
             # Apply the exposure function to the linear color
             pixel_color.apply_exposure(meta.exposure_function)
             # convert to color to sRGB
