@@ -74,19 +74,19 @@ def make_reflection_ray(incident: np.ndarray, normal: np.ndarray, origin: np.nda
     direction = (-2 * np.dot(incident, normal) * normal) + incident
     return shapes.Ray(origin, direction)
 
-def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMata, depth = 0) -> Optional[colors.RGBLinear]:
+def trace_ray(ray: shapes.Ray, origin: np.ndarray, objects: scene.SceneObjects, meta: scene.SceneMata, depth = 0, fudge = 10e-5) -> Optional[colors.RGBLinear]:
     closest_shape = None
     distance_to_closest_shape = math.inf
     for shape in objects.shapes:
         distance_to_shape = shape.intersection(ray)
         if distance_to_shape:
-            if distance_to_shape < distance_to_closest_shape:
+            if distance_to_shape < distance_to_closest_shape and distance_to_shape > fudge:
                 distance_to_closest_shape = distance_to_shape
                 closest_shape = shape
     pixel_color = colors.RGBLinear(0.0, 0.0, 0.0)
     if closest_shape:
         # calculate the point of intersection
-        point_of_intersection = meta.eye + (distance_to_closest_shape*ray.direction)
+        point_of_intersection = origin + (distance_to_closest_shape*ray.direction)
         # find the normal of the shape at the point of intersection
         normal = closest_shape.normal_at_point(point_of_intersection)
         for light_source in objects.lights:
@@ -103,7 +103,7 @@ def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMat
             for shape in objects.shapes:
                 shape_distance = shape.intersection(ray_to_light)
                 if shape_distance:
-                    if shape_distance < distance_to_light and shape_distance > 10e-5:
+                    if shape_distance < distance_to_light and shape_distance > fudge:
                         has_shadow = True
 
             if not has_shadow:
@@ -120,7 +120,7 @@ def trace_ray(ray: shapes.Ray, objects: scene.SceneObjects, meta: scene.SceneMat
         # Check for reflection
         if closest_shape.shininess != 0.0 and depth < meta.reflection_depth:
             reflection_ray = make_reflection_ray(ray.direction, normal, point_of_intersection)
-            color_from_reflection = trace_ray(reflection_ray, objects, meta, depth + 1)
+            color_from_reflection = trace_ray(reflection_ray, point_of_intersection, objects, meta, depth + 1)
             # Calculate the mix of the color from the standard light and the color from reflection
             if color_from_reflection:
                 pixel_color = colors.color_from_ndarray(
@@ -136,7 +136,7 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
             ray_from_eye = make_eye_ray(x, y, meta)
             if not ray_from_eye:
                 continue
-            pixel_color = trace_ray(ray_from_eye, objects, meta)
+            pixel_color = trace_ray(ray_from_eye, meta.eye, objects, meta)
             if not pixel_color:
                 pixel_color = colors.RGBLinear()
             # Apply the exposure function to the linear color

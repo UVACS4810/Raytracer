@@ -10,3 +10,5 @@ hw3fisheye.txt
 hw3shadow-basic.txt
 hw3shadow-bulb.txt
 hw3shadow-suns.txt
+hw3shine1.txt
+hw3bounces.txt
