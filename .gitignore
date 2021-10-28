@@ -1,7 +1,12 @@
+# python stuff
 venv/
 *.pyc
 __pycache__
 *.png
+# submission stufff
 *.gz
 *.tar
+# vscode stuff
 .vscode/settings.json
+# Things for mac
+.DS_Store

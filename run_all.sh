@@ -1,5 +1,5 @@
 #!/bin/zsh
-shopt -s nullglob
+# shopt -s nullglob
 for file in test/test_files/*.txt
 do
     make run file=$file
@@ -8,4 +8,4 @@ do
     rm $filename.png
      
 done
-shopt -u nullglob
+# shopt -u nullglob
