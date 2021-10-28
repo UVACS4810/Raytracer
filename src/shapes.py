@@ -8,7 +8,7 @@ import numpy as np
 
 import src.colors as colors
 
-@dataclasses.dataclass
+@dataclasses.dataclass(unsafe_hash=True)
 class Ray():
     origin: np.ndarray
     direction: np.ndarray
@@ -16,6 +16,8 @@ class Ray():
     def __post_init__(self):
         normal_of_direction = np.linalg.norm(self.direction)
         self.direction = self.direction / normal_of_direction
+    def __str__(self) -> str:
+        return str(self.origin) + str(self.direction)
 
 @dataclasses.dataclass
 class _ShapeBase:

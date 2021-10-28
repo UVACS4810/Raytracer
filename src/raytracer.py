@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from numpy.linalg import norm
 from timeit import default_timer as timer
-
+import concurrent.futures
 import src.colors as colors
 import src.scene as scene
 import src.shapes as shapes
@@ -77,6 +77,7 @@ def make_reflection_ray(incident: np.ndarray, normal: np.ndarray, origin: np.nda
 def trace_ray(ray: shapes.Ray, origin: np.ndarray,
               objects: scene.SceneObjects, meta: scene.SceneMata,
               depth = 0, fudge = 10e-5) -> Optional[colors.RGBLinear]:
+    print("starting raytracing")
     closest_shape = None
     distance_to_closest_shape = math.inf
     for shape in objects.shapes:
@@ -137,21 +138,34 @@ def trace_ray(ray: shapes.Ray, origin: np.ndarray,
 
 def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Image) -> None:
     start = timer()
-    
+    ray_list = []
+    ray_to_pixel = {}
     for x in range(meta.width):
         for y in range(meta.height):
             # Make the ray
             ray_from_eye = make_eye_ray(x, y, meta)
             if not ray_from_eye:
                 continue
-            pixel_color = trace_ray(ray_from_eye, meta.eye, objects, meta)
-            if not pixel_color:
-                continue
-            # Apply the exposure function to the linear color
-            pixel_color.apply_exposure(meta.exposure_function)
-            # convert to color to sRGB
-            converted_color = pixel_color.as_rgb(rounded=True)
-            image.im.putpixel((x, y), (converted_color.r, converted_color.g, converted_color.b, converted_color.a))
+            ray_list.append(ray_from_eye)
+            ray_to_pixel[str(ray_from_eye)] = [x, y]
+
+    
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        print("starting process pool")
+        futures_to_rays = {executor.submit(trace_ray, ray, meta.eye, objects, meta): ray for ray in ray_list}
+        print("created futures to rays")
+        for future in concurrent.futures.as_completed(futures_to_rays):
+            print("working on future")
+            pixel_color = future.result()
+            print(f"pixel color = {pixel_color}")
+            if pixel_color:
+                ray = futures_to_rays[future]
+                # Apply the exposure function to the linear color
+                pixel_color.apply_exposure(meta.exposure_function)
+                # convert to color to sRGB
+                converted_color = pixel_color.as_rgb(rounded=True)
+                x_y = ray_to_pixel[str(ray)]
+                image.im.putpixel((x_y[0], x_y[1]), (converted_color.r, converted_color.g, converted_color.b, converted_color.a))
     end = timer()
     print(f"Elapsed raytracing time = {end-start}s")
 
