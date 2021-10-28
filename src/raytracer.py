@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import numpy as np
 from PIL import Image
 from numpy.linalg import norm
-from src import utils
+from timeit import default_timer as timer
 
 import src.colors as colors
 import src.scene as scene
@@ -74,7 +74,9 @@ def make_reflection_ray(incident: np.ndarray, normal: np.ndarray, origin: np.nda
     direction = (-2 * np.dot(incident, normal) * normal) + incident
     return shapes.Ray(origin, direction)
 
-def trace_ray(ray: shapes.Ray, origin: np.ndarray, objects: scene.SceneObjects, meta: scene.SceneMata, depth = 0, fudge = 10e-5) -> Optional[colors.RGBLinear]:
+def trace_ray(ray: shapes.Ray, origin: np.ndarray,
+              objects: scene.SceneObjects, meta: scene.SceneMata,
+              depth = 0, fudge = 10e-5) -> Optional[colors.RGBLinear]:
     closest_shape = None
     distance_to_closest_shape = math.inf
     for shape in objects.shapes:
@@ -118,7 +120,7 @@ def trace_ray(ray: shapes.Ray, origin: np.ndarray, objects: scene.SceneObjects, 
             if color_from_light:
                 pixel_color += color_from_light
         # Check for reflection
-        if closest_shape.shininess != 0.0 and depth < meta.reflection_depth:
+        if closest_shape.shininess > 0.0 and depth < meta.reflection_depth:
             reflection_ray = make_reflection_ray(ray.direction, normal, point_of_intersection)
             color_from_reflection = trace_ray(reflection_ray, point_of_intersection, objects, meta, depth + 1)
             # Calculate the mix of the color from the standard light and the color from reflection
@@ -134,6 +136,8 @@ def trace_ray(ray: shapes.Ray, origin: np.ndarray, objects: scene.SceneObjects, 
     
 
 def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Image) -> None:
+    start = timer()
+    
     for x in range(meta.width):
         for y in range(meta.height):
             # Make the ray
@@ -148,4 +152,6 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
             # convert to color to sRGB
             converted_color = pixel_color.as_rgb(rounded=True)
             image.im.putpixel((x, y), (converted_color.r, converted_color.g, converted_color.b, converted_color.a))
+    end = timer()
+    print(f"Elapsed raytracing time = {end-start}s")
 

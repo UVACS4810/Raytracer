@@ -102,3 +102,7 @@ def parse_line(line: "list[str]", scene_objects: scene.SceneObjects, scene_meta:
     elif keyword == "bounces":
         bounce_num = int(line[1])
         scene_meta.reflection_depth = bounce_num
+    
+    elif keyword == "roughness":
+        roughness = float(line[1])
+        scene_meta.roughness = roughness

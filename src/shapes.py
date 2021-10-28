@@ -69,6 +69,11 @@ class Sphere(Shape, _SphereFields):
             return t_c - t_offset
 
     def normal_at_point(self, point: np.ndarray) -> np.ndarray:
+        # TODO: Figure out a better way to ensure point shape
         assert point.shape == (3,)
         normal = point - self.center
-        return normal / np.linalg.norm(normal)
+        normalized_normal = normal / np.linalg.norm(normal)
+        # apply gausian roughness
+        gausian_normal = np.random.normal(normalized_normal, self.roughness)
+        # Renormalize
+        return gausian_normal / np.linalg.norm(gausian_normal)
