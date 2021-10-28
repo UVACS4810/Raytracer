@@ -124,9 +124,13 @@ def trace_ray(ray: shapes.Ray, origin: np.ndarray, objects: scene.SceneObjects, 
             # Calculate the mix of the color from the standard light and the color from reflection
             if color_from_reflection:
                 pixel_color = colors.color_from_ndarray(
-                lerp(pixel_color.as_ndarray(), color_from_reflection.as_ndarray(), closest_shape.shininess)
-            )
-    return pixel_color
+                    lerp(pixel_color.as_ndarray(), color_from_reflection.as_ndarray(), closest_shape.shininess)
+                )
+            else:
+                pixel_color = colors.color_from_ndarray(
+                    lerp(pixel_color.as_ndarray(), colors.RGBLinear().as_ndarray(), closest_shape.shininess)
+                )
+        return pixel_color
     
 
 def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Image) -> None:
@@ -138,7 +142,7 @@ def raytrace_scene(objects: scene.SceneObjects, meta: scene.SceneMata, image: Im
                 continue
             pixel_color = trace_ray(ray_from_eye, meta.eye, objects, meta)
             if not pixel_color:
-                pixel_color = colors.RGBLinear()
+                continue
             # Apply the exposure function to the linear color
             pixel_color.apply_exposure(meta.exposure_function)
             # convert to color to sRGB
